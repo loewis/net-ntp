@@ -135,29 +135,15 @@ our %LEAP_INDICATOR = (
         my $host = shift || 'localhost';
         my $port = shift || 'ntp';
 
+        my %args = (
+            Proto    => 'udp',
+            PeerHost => $host,
+            PeerPort => $port);
         my $sock;
         if (HAVE_SOCKET_INET6) {
-            # XXX IO::Socket::INET6 is not capable of 
-            # correctly determining the local address family if
-            # if no local address was specified. Therefore, we resolve
-            # the server name ourselves.
-            # XXX this only uses the first getaddr result; we should
-            # try them all in case the local system doesn't support
-            # the address family.
-            use Socket6;
-            my @ai = getaddrinfo($host, $port, AF_UNSPEC, SOCK_DGRAM);
-            die "Bad service $host:$port ($ai[0])" unless scalar(@ai) >= 5;
-            my($family, $socktype, $proto, $saddr, $canonname, @rai) = @ai;
-            my($host, $port) = getnameinfo($saddr, 
-                                           NI_NUMERICHOST | NI_NUMERICSERV);
-            $sock = IO::Socket::INET6->new(Domain  => $family,
-                                           Proto   => $proto,
-                                           PeerAddr=> $host,
-                                           PeerPort=> $port);
+            $sock = IO::Socket::INET6->new(%args);
         } else {
-            $sock = IO::Socket::INET->new(Proto    => 'udp',
-                                          PeerHost => $host,
-                                          PeerPort => $port);
+            $sock = IO::Socket::INET->new(%args);
         }
         die $@ unless $sock;
 
