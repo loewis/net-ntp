@@ -140,7 +140,10 @@ our %LEAP_INDICATOR = (
             PeerHost => $host,
             PeerPort => $port);
         my $sock;
-        if (HAVE_SOCKET_INET6) {
+        
+        # Before 2.56, INET6 might have bound to different address
+        # families for the local and remote addresses.
+        if (HAVE_SOCKET_INET6 && $IO::Socket::INET6::VERSION >= 2.56) {
             $sock = IO::Socket::INET6->new(%args);
         } else {
             $sock = IO::Socket::INET->new(%args);
